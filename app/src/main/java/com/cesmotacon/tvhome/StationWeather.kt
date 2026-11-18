@@ -16,6 +16,8 @@ import kotlin.math.sin
 object StationWeather : WeatherSource {
     override val credit get() = if (HaConfig.station?.let { it.solarRadiation ?: it.solarLux ?: it.wind ?: it.rainRate } != null) "your weather station" else "Home Assistant"
     override val liveGusts = true
+    /** The sky and the moon follow Home Assistant's home location, so Settings doesn't offer a ZIP search. */
+    override val placeNote get() = "From Home Assistant's home location (Settings → System → General in Home Assistant)"
 
     // solar-sensor averages, as a fraction of "full sun" (1 = full sun)
     @Volatile private var fast = -1f
@@ -74,6 +76,7 @@ object StationWeather : WeatherSource {
     }
 
     private fun placeFromHome() {
+        if (HaConfig.station == null) return   // without a station the viewer's own location setting stands
         val lat = attr("zone.home", "latitude") ?: return
         val lon = attr("zone.home", "longitude") ?: return
         val cur = Place.current
