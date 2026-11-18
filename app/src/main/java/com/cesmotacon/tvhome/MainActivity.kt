@@ -91,6 +91,12 @@ class MainActivity : Activity() {
         Edition.init(this)
         build()
         setContentView(root)
+        // TVs have no system bars; on other devices (and emulators) hide them so the home screen fills the screen
+        window.setDecorFitsSystemWindows(false)
+        window.insetsController?.let {
+            it.hide(android.view.WindowInsets.Type.systemBars())
+            it.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
         loadApod()
     }
 

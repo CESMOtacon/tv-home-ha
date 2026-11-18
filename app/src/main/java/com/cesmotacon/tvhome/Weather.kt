@@ -45,6 +45,8 @@ interface WeatherSource {
     fun refresh(ctx: Context)
     /** Forget the cached weather (the place changed). */
     fun invalidate() {}
+    /** If the source decides the location itself (not the viewer), what to say instead of offering to change it. */
+    val placeNote: String? get() = null
     /** The latest weather, or null if nothing is known yet. */
     fun now(): Wx?
 }
@@ -208,6 +210,35 @@ object Place {
         }.onFailure { Log.w(TAG, "ipwho.is: ${it.message}") }.getOrNull()
         if (got != null) set(ctx, got)
         return got ?: p
+    }
+}
+
+/** Finds a place by postal code or town name (Open-Meteo's free geocoding; no account). */
+object Geo {
+    class Hit(val label: String, val name: String, val lat: Double, val lon: Double)
+
+    /** Blocking; call off the main thread. Postal codes match in several countries, so this TV's country comes first. */
+    fun search(query: String): List<Hit> {
+        val q = query.trim()
+        if (q.length < 2) return emptyList()
+        val lang = Locale.getDefault().language.ifBlank { "en" }
+        val country = Locale.getDefault().country
+        val base = "https://geocoding-api.open-meteo.com/v1/search?name=${java.net.URLEncoder.encode(q, "UTF-8")}&count=10&language=$lang&format=json"
+        val postal = q.any { it.isDigit() } && q.length <= 10
+        val local = if (postal && country.length == 2) runCatching { parse(Net.get("$base&countryCode=$country")) }.getOrDefault(emptyList()) else emptyList()
+        if (local.isNotEmpty()) return local
+        return parse(Net.get(base)).sortedBy { if (it.label.endsWith(Locale("", country).displayCountry)) 0 else 1 }
+    }
+
+    private fun parse(json: String): List<Hit> {
+        val a = JSONObject(json).optJSONArray("results") ?: return emptyList()
+        return (0 until a.length()).mapNotNull { a.optJSONObject(it) }.map { r ->
+            val name = r.optString("name")
+            val region = r.optString("admin1").takeIf { it.isNotBlank() && it != name }
+            val countryName = r.optString("country")
+            Hit(listOfNotNull(name, region, countryName.takeIf { it.isNotBlank() }).joinToString(", "),
+                listOfNotNull(name, region).joinToString(", "), r.getDouble("latitude"), r.getDouble("longitude"))
+        }.distinctBy { it.label }
     }
 }
 

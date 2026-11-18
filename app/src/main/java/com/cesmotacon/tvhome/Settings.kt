@@ -1,6 +1,12 @@
 package com.cesmotacon.tvhome
 
+import android.app.AlertDialog
 import android.content.Context
+import android.text.InputType
+import android.view.KeyEvent
+import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
@@ -58,6 +64,7 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
     private lateinit var homeRow: Row
     private lateinit var inputsRow: Row
     private lateinit var weatherRow: Row
+    private lateinit var locationRow: Row
     private lateinit var unitsRow: Row
     private lateinit var slide: View
     val isOpen get() = root.visibility == View.VISIBLE
@@ -112,6 +119,12 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         sheet.addView(section("WEATHER"))
         weatherRow = Row("Weather and temperature", weatherDesc()) { Prefs.setWeather(ctx, !Prefs.weather(ctx)); refresh(); onChange() }
         sheet.addView(weatherRow, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP))
+        locationRow = Row("Weather location", placeDesc()) {
+            val note = Weather.source.placeNote
+            if (note != null) (ctx as? MainActivity)?.toast(note)
+            else LocationPicker.open(ctx) { refresh(); onChange() }
+        }
+        sheet.addView(locationRow, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP))
         unitsRow = Row("Temperature in °F", "Switch between °F and °C") {
             Prefs.setUnits(ctx, if (Weather.useFahrenheit(ctx)) "c" else "f"); refresh(); onChange()
         }
@@ -143,14 +156,19 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         slide = scroll
     }
 
-    private fun weatherDesc(): String {
+    private fun weatherDesc() =
+        if (Prefs.weather(ctx)) "Temperature by the clock and the Live weather sky, from ${Weather.source.credit}"
+        else "Off: no weather and no location lookups"
+
+    private fun placeDesc(): String {
+        Weather.source.placeNote?.let { return it }
         val p = Place.current
-        val where = when {
-            p == null -> "your approximate location (looked up from your internet address)"
-            p.source == "ip" -> "${p.name.ifBlank { "your area" }} (approximate, from your internet address)"
-            else -> p.name.ifBlank { "your location" }
+        return when {
+            p == null -> "Automatic: your area, worked out from your internet address. Press to enter a ZIP code or town"
+            p.source == "ip" -> "${p.name.ifBlank { "Your area" }}, worked out from your internet address. Press to enter a ZIP code or town"
+            p.source == "manual" -> "${p.name.ifBlank { "Set by you" }} (set by you). Press to change"
+            else -> p.name.ifBlank { "Set" }
         }
-        return "From ${Weather.source.credit} for $where"
     }
 
     private fun seasonDesc() = when (SeasonalView.pick()) {
@@ -175,6 +193,8 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         inputsRow.setMark(Prefs.allInputs(ctx), radio = false)
         weatherRow.setMark(Prefs.weather(ctx), radio = false)
         weatherRow.descTv.text = weatherDesc()
+        locationRow.descTv.text = placeDesc()
+        locationRow.setMark(Place.current?.source == "manual", radio = false)
         val f = Weather.useFahrenheit(ctx)
         unitsRow.titleTv.text = if (f) "Temperature in °F" else "Temperature in °C"
         unitsRow.setMark(true, radio = false)
@@ -194,5 +214,70 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         slide.animate().translationX(Ui.pxf(640)).setDuration(240).start()
         root.animate().alpha(0f).setDuration(260).withEndAction { root.visibility = View.GONE }.start()
         onClose()
+    }
+}
+
+/** Settings → Weather location: type a ZIP/postal code or a town with the remote, then pick the right match. */
+object LocationPicker {
+    fun open(ctx: Context, done: () -> Unit) {
+        val act = ctx as? android.app.Activity ?: return
+        val input = EditText(act).apply {
+            hint = "ZIP code or town"
+            isSingleLine = true
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
+            Place.current?.takeIf { it.source == "manual" }?.let { setText(it.name); selectAll() }
+        }
+        val box = FrameLayout(act).apply { setPadding(Ui.px(56), Ui.px(8), Ui.px(56), 0); addView(input) }
+        val prompt = "Type a ZIP or postal code, or a town name."
+        val dlg = AlertDialog.Builder(act, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Weather location")
+            .setMessage(prompt)
+            .setView(box)
+            .setPositiveButton("Search", null)
+            .setNeutralButton("Automatic") { _, _ ->
+                Place.clear(act); done(); (act as? MainActivity)?.toast("Weather for your area, from your internet address")
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        fun choose(h: Geo.Hit) {
+            Place.set(act, Place.P(h.lat, h.lon, h.name, "manual", System.currentTimeMillis()))
+            done()
+            (act as? MainActivity)?.toast("Weather for ${h.name}")
+        }
+
+        fun search() {
+            val q = input.text.toString().trim()
+            if (q.length < 2) { dlg.setMessage("Type at least two letters or digits."); return }
+            val btn = dlg.getButton(AlertDialog.BUTTON_POSITIVE)
+            btn.isEnabled = false
+            dlg.setMessage("Searching…")
+            Net.io.execute {
+                val r = runCatching { Geo.search(q) }
+                act.runOnUiThread {
+                    btn.isEnabled = true
+                    val hits = r.getOrNull()
+                    when {
+                        hits == null -> dlg.setMessage("Couldn't search. Is the TV online?")
+                        hits.isEmpty() -> dlg.setMessage("Nothing found for \"$q\". Try a ZIP code or a bigger town nearby.")
+                        else -> {
+                            dlg.dismiss()
+                            if (hits.size == 1) choose(hits[0]) else Ui.menu(act, "Which one?", hits.map { h -> h.label to { choose(h) } })
+                        }
+                    }
+                }
+            }
+        }
+
+        input.setOnEditorActionListener { _, id, ev ->
+            if (id == EditorInfo.IME_ACTION_SEARCH || id == EditorInfo.IME_ACTION_DONE || ev?.keyCode == KeyEvent.KEYCODE_ENTER) { search(); true } else false
+        }
+        dlg.setOnShowListener {
+            dlg.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { search() }
+            input.requestFocus()
+        }
+        dlg.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        dlg.show()
     }
 }

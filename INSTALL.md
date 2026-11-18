@@ -91,7 +91,8 @@ On the TV, open your apps list (on Google TV: **Apps** at the top, or the apps r
 Google TV lets you move it to the front of your favourites so it's one click away.
 
 Have a look around:
-- **Settings** (top right) changes the background, turns weather on or off, and switches °F/°C.
+- **Settings** (top right) changes the background, turns weather on or off, sets your weather location (type a
+  ZIP code or town with the remote), and switches °F/°C.
 - **Hold OK** on an app in the row to move it left or right or take it off. Add apps from **All apps** (hold OK
   on an app there).
 - **All apps** also has a **Google TV** tile that opens Google's home screen, for search and your watchlist.
@@ -161,10 +162,11 @@ adb shell cmd appops set com.cesmotacon.tvhome AUTO_START allow
 If the Home button still goes to Google afterwards, run the `enabled_accessibility_services` command from step 2
 of the previous section again, or restart the TV.
 
-### Set the weather location yourself
+### Set the weather location from the computer
 
-By default TV Home works out your town from your internet address, about once a week. To give it an exact place
-instead (latitude and longitude from any map; the name is just for display):
+The easy way is on the TV: **Settings → Weather location**, then type a ZIP code or town. By default TV Home works
+out your town from your internet address, about once a week. To set exact coordinates from the computer instead
+(latitude and longitude from any map; the name is just for display):
 
 ```
 adb shell am broadcast -a com.cesmotacon.tvhome.LOCATION -p com.cesmotacon.tvhome --ef lat 40.7128 --ef lon -74.0060 --es name "New York"

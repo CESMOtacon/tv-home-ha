@@ -36,7 +36,8 @@ Setup: [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
 - **Your apps, your order.** The Apps row shows your favourites; hold OK on an app to move it or take it off, and
   add more from *All apps*. No sponsored rows, no "recommended for you".
 - **HDMI inputs** appear only when something is plugged in and switched on.
-- **Clock with the outdoor temperature** and a little weather icon.
+- **Clock with the outdoor temperature** and a little weather icon. Weather is optional (Settings → Weather);
+  type a ZIP code or town to set where it's for, or let TV Home work out your area.
 - **Backgrounds** (Settings → Background):
   - *NASA picture of the day*, slowly panning.
   - *Live weather*: your real sky right now, drawn from the current weather where you are. Clouds come and go,
@@ -67,15 +68,16 @@ No accounts, no analytics, no ads. TV Home only talks to these, and only for wha
 |---|---|---|
 | Picture of the day | NASA (science.nasa.gov) | Once a day, if that background is chosen |
 | Weather | [Open-Meteo](https://open-meteo.com) (your approximate coordinates) | Every 15 minutes while TV Home is on screen |
-| Your approximate location for the weather | ipapi.co, or ipwho.is if that fails (city level, from your internet address) | Once a week; never if you set the location yourself |
+| Your approximate location for the weather | ipapi.co, or ipwho.is if that fails (city level, from your internet address) | Once a week, and only until you set a location yourself |
+| Finding a place you type in Settings | Open-Meteo's place search | When you search |
 | Live sun and moon pictures | NASA (sdo.gsfc.nasa.gov, svs.gsfc.nasa.gov) | While *Live weather* is showing: sun every 20 min, moon hourly |
 | Your Home Assistant | Only the address in your `ha.json` | Always connected (local network), to show states and the doorbell |
 
 With a `weather` section in `ha.json`, the weather comes from Home Assistant instead, and Open-Meteo and the
 location lookup aren't used.
 
-Turning off *Settings → Weather and temperature* stops the weather and location lookups entirely. You can also
-give it an exact location instead of the automatic one (see INSTALL.md, "Optional extras").
+Turning off *Settings → Weather and temperature* stops the weather and location lookups entirely. To skip the
+automatic location, type your ZIP code or town in *Settings → Weather location*.
 
 The helper behind the Home button option is an Android accessibility service, because that's the only way an app
 can hear the Home button on Google TV. It only listens for the Home key and for Google's home screen opening; it
