@@ -5,41 +5,47 @@ import android.content.Intent
 import android.view.KeyEvent
 
 /**
- * Hooks for editions that add their own features. This plain edition adds nothing.
- * The Home Assistant edition (github.com/CESMOtacon/tv-home-ha) replaces this one file to add its rows,
- * status pills, doorbell pop-up and weather-station data, so the rest of the code stays the same in both.
+ * The Home Assistant edition. This file is the only shared file that differs from plain TV Home
+ * (github.com/CESMOtacon/tv-home); everything it adds lives in the Ha*.kt files, StationWeather.kt,
+ * DoorbellPopup.kt and CamerasActivity.kt. All house-specific settings come from ha.json (see docs/ha.example.json).
  */
 object Edition {
-    const val NAME = "TV Home"
+    const val NAME = "TV Home for Home Assistant"
 
-    /** The app (or its background helper) is starting. Called more than once; make it idempotent. */
-    fun init(ctx: Context) {}
+    fun init(ctx: Context) {
+        HaConfig.load(ctx)
+        Ha.start(ctx)
+        if (HaConfig.station != null) StationWeather.attach()
+    }
 
-    /** Where the weather comes from. */
-    fun weather(): WeatherSource = OpenMeteo
+    /** A weather station (or HA's weather entity) when ha.json has a "weather" section, otherwise Open-Meteo. */
+    fun weather(): WeatherSource = if (HaConfig.station != null) StationWeather else OpenMeteo
 
-    /** Once, while the home screen is built: add rows to [MainActivity.rowsBox] and pills via [MainActivity.addChip]. */
-    fun buildHome(home: MainActivity) {}
+    fun buildHome(home: MainActivity) = HaHome.build(home)
+    fun onHomeResume(home: MainActivity) = HaHome.resume(home)
+    fun onHomePause(home: MainActivity) = HaHome.pause(home)
 
-    fun onHomeResume(home: MainActivity) {}
-    fun onHomePause(home: MainActivity) {}
-
-    /** Extra parts for the ambient screen's line (after the date, temperature and weather). */
     fun ambientExtras(): List<String> = emptyList()
+    fun glowColors(): IntArray? = HaHome.glowColors()
+    fun notMusic(): Set<String> = HaConfig.notMusic
 
-    /** Colours (0xRRGGBB) for the "Glow" background to follow (e.g. a running light show), or null to drift through its own. */
-    fun glowColors(): IntArray? = null
+    fun onHelperConnected(svc: HomeKeyService) = HaHelper.connected(svc)
+    fun onHelperDestroyed(svc: HomeKeyService) = HaHelper.destroyed(svc)
+    fun onHelperKey(event: KeyEvent): Boolean = HaHelper.onKey(event)
 
-    /** More apps whose playback shouldn't count as music (no album art background). */
-    fun notMusic(): Set<String> = emptySet()
-
-    /** The background helper (an accessibility service) connected or stopped. */
-    fun onHelperConnected(svc: HomeKeyService) {}
-    fun onHelperDestroyed(svc: HomeKeyService) {}
-
-    /** Remote keys while the helper runs. Return true if handled (e.g. a pop-up has focus). */
-    fun onHelperKey(event: KeyEvent): Boolean = false
-
-    /** adb test hooks this edition adds. Return true if handled. */
-    fun onDebug(ctx: Context, i: Intent): Boolean = false
+    /**
+     * adb test hooks (all with  -p com.cesmotacon.tvhome ):
+     *   RING (doorbell pop-up as if someone rang; the reply buttons really speak), CAM (just the camera),
+     *   VEHICLE (the vehicle preview), RELOAD (re-read ha.json and reconnect).
+     */
+    fun onDebug(ctx: Context, i: Intent): Boolean {
+        when (i.action) {
+            "com.cesmotacon.tvhome.RING" -> HaHelper.showDoorbell(true)
+            "com.cesmotacon.tvhome.CAM" -> HaHelper.showDoorbell(false)
+            "com.cesmotacon.tvhome.VEHICLE" -> HaHelper.showVehicle(force = true)
+            "com.cesmotacon.tvhome.RELOAD" -> { HaConfig.load(ctx, force = true); Ha.start(ctx); Ha.reload() }
+            else -> return false
+        }
+        return true
+    }
 }

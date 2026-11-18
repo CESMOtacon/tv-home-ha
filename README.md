@@ -1,4 +1,8 @@
-# TV Home
+# TV Home for Home Assistant
+
+[TV Home](https://github.com/CESMOtacon/tv-home) plus Home Assistant: your lights and scenes, every camera, and a
+doorbell pop-up, right on the TV's home screen. Everything about your house is set up in one file (`ha.json`);
+nothing is hard-coded.
 
 A calm, ad-free home screen for Google TV and Android TV. Your apps in the order you like, the clock and the
 outdoor temperature, and a background that's actually worth looking at: NASA's picture of the day, a live sky
@@ -13,7 +17,21 @@ it puts everything back exactly as it was.
 | **Snow** | **Thunderstorm** | **Sun behind a cloud** |
 | ![Live weather in snow](docs/images/sky-snow.jpg) | ![Live weather in a thunderstorm](docs/images/sky-storm.jpg) | ![Live weather, cloudy](docs/images/sky-cloudy.jpg) |
 
-## What it does
+## What the Home Assistant edition adds
+
+- **A Lights group**: tiles for your scripts, scenes and light shows. A running show glows in its own colours
+  (and so does the *Glow* background); press it again to stop it, or press *Lights back* to end everything.
+- **A Cameras group**: the front door camera in a pop-up, and *All cameras*: every camera on one screen, live on
+  the one you're on, full screen in HD with OK.
+- **A doorbell pop-up over whatever you're watching** when someone rings, with buttons that speak a reply through
+  the doorbell (for example "Be right there"), and an optional quieter preview when a car pulls in.
+- **Status pills** next to Settings for any sensors you like.
+- **Live weather from your own weather station**: cloud cover from your solar sensor (the sun really goes behind
+  a cloud when your light level drops), rain from your rain gauge, wind and gusts from your anemometer.
+
+Setup: [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
+
+## Everything from TV Home
 
 - **Your apps, your order.** The Apps row shows your favourites; hold OK on an app to move it or take it off, and
   add more from *All apps*. No sponsored rows, no "recommended for you".
@@ -38,7 +56,8 @@ it puts everything back exactly as it was.
 You'll need a computer on the same Wi-Fi as the TV for about 20 minutes. Step-by-step instructions, no
 experience needed: **[INSTALL.md](INSTALL.md)**.
 
-The APK is on the [Releases](../../releases) page.
+The APK is on the [Releases](../../releases) page. Then connect it to Home Assistant:
+[docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
 
 ## Privacy
 
@@ -50,6 +69,10 @@ No accounts, no analytics, no ads. TV Home only talks to these, and only for wha
 | Weather | [Open-Meteo](https://open-meteo.com) (your approximate coordinates) | Every 15 minutes while TV Home is on screen |
 | Your approximate location for the weather | ipapi.co, or ipwho.is if that fails (city level, from your internet address) | Once a week; never if you set the location yourself |
 | Live sun and moon pictures | NASA (sdo.gsfc.nasa.gov, svs.gsfc.nasa.gov) | While *Live weather* is showing: sun every 20 min, moon hourly |
+| Your Home Assistant | Only the address in your `ha.json` | Always connected (local network), to show states and the doorbell |
+
+With a `weather` section in `ha.json`, the weather comes from Home Assistant instead, and Open-Meteo and the
+location lookup aren't used.
 
 Turning off *Settings → Weather and temperature* stops the weather and location lookups entirely. You can also
 give it an exact location instead of the automatic one (see INSTALL.md, "Optional extras").
@@ -60,10 +83,9 @@ doesn't read anything on screen.
 
 ## Editions
 
-- **TV Home** (this repository): works on its own.
-- **[TV Home for Home Assistant](https://github.com/CESMOtacon/tv-home-ha)**: the same app plus Home Assistant:
-  light-show and scene tiles, every camera on one screen in HD, a doorbell pop-up over whatever you're watching
-  (with quick spoken replies), and a Live weather sky driven by your own weather station.
+- **[TV Home](https://github.com/CESMOtacon/tv-home)**: works on its own, no Home Assistant needed.
+- **TV Home for Home Assistant** (this repository): TV Home plus everything above. It's built on TV Home's code
+  (same history); `Edition.kt` and the `Ha*.kt` files are where they differ.
 
 ## Building from source
 
@@ -76,7 +98,9 @@ Android Studio, or JDK 17+ and the Android SDK:
 Release builds are signed only if you add a `keystore.properties` (see `app/build.gradle.kts`).
 
 Written in Kotlin with plain Android views; everything is drawn in 1920×1080 "design pixels" and scaled to the
-screen. `Edition.kt` is the one file the Home Assistant edition replaces.
+screen. The Home Assistant parts: `Edition.kt`, `HaConfig.kt` (ha.json and the adb setup endpoint), `Ha.kt`
+(websocket client), `HaHome.kt` (rows and pills), `HaHelper.kt` (doorbell), `StationWeather.kt`,
+`DoorbellPopup.kt` and `CamerasActivity.kt`.
 
 ## Credits
 

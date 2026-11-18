@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- optional, granted over adb and only used if ha.json asks: keeps wireless debugging on after Wi-Fi drops -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
@@ -51,6 +54,12 @@
         </activity>
 
         <activity
+            android:name=".CamerasActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".AllAppsActivity"
             android:exported="false"
             android:excludeFromRecents="true"
@@ -90,7 +99,18 @@
                 <action android:name="com.cesmotacon.tvhome.SEASON" />
                 <action android:name="com.cesmotacon.tvhome.AMBIENT" />
                 <action android:name="com.cesmotacon.tvhome.SKY" />
+                <action android:name="com.cesmotacon.tvhome.RING" />
+                <action android:name="com.cesmotacon.tvhome.CAM" />
+                <action android:name="com.cesmotacon.tvhome.VEHICLE" />
+                <action android:name="com.cesmotacon.tvhome.RELOAD" />
             </intent-filter>
         </receiver>
+
+        <!-- Home Assistant setup over adb (adb shell content write, see INSTALL.md) -->
+        <provider
+            android:name=".SetupProvider"
+            android:authorities="com.cesmotacon.tvhome.setup"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
     </application>
 </manifest>

@@ -1,0 +1,57 @@
+{
+  "url": "http://homeassistant.local:8123",
+  "token": "PASTE-A-LONG-LIVED-ACCESS-TOKEN-HERE",
+
+  "weather": {
+    "temperature": "sensor.outdoor_temperature",
+    "forecast": "weather.home",
+    "solar_radiation": "sensor.solar_radiation",
+    "rain_rate": "sensor.rain_rate",
+    "raining": "binary_sensor.raining",
+    "wind_speed": "sensor.wind_speed",
+    "wind_gust": "sensor.wind_gust",
+    "wind_direction": "sensor.wind_direction",
+    "humidity": "sensor.outdoor_humidity",
+    "dew_point": "sensor.dew_point"
+  },
+
+  "lights": {
+    "title": "Lights",
+    "tiles": [
+      { "name": "Movie time", "icon": "🎬", "start": "scene.movie_time", "colors": ["#3A0CA3", "#4361EE", "#4CC9F0"] },
+      { "name": "Cozy", "icon": "🕯️", "start": "script.cozy_on", "stop": "script.cozy_off", "running": "input_boolean.cozy", "colors": ["#FF9A3C", "#FFD27A", "#C8501A"] },
+      { "name": "Party", "icon": "🎉", "start": "script.party_lights", "running": "input_boolean.party_lights_running", "colors": ["#FF0033", "#FF2D9A", "#A100FF"] },
+      { "name": "Lights back", "icon": "💡", "action": "lights_back", "also_stop": [] }
+    ]
+  },
+
+  "cameras": {
+    "title": "Cameras",
+    "tiles": [
+      { "name": "Front door", "icon": "🚪", "action": "doorbell" },
+      { "name": "All cameras", "icon": "📹", "action": "all_cameras" }
+    ]
+  },
+
+  "doorbell": {
+    "ring": "binary_sensor.front_door_visitor",
+    "camera": "camera.front_door_sub",
+    "camera_hd": "camera.front_door_main",
+    "snapshot": "camera.front_door_snapshot",
+    "vehicle": "binary_sensor.front_door_vehicle",
+    "vehicle_quiet_when": "input_boolean.do_not_disturb",
+    "vehicle_cooldown_minutes": 2,
+    "speak": { "tts": "tts.home_assistant_cloud", "speaker": "media_player.front_door_speaker" },
+    "replies": [
+      ["Be right there", "Be right there!"],
+      ["Leave it by the door", "Please leave it by the door. Thanks!"]
+    ]
+  },
+
+  "pills": [
+    { "entity": "sensor.washing_machine_status", "label": "Washer" }
+  ],
+
+  "not_music": [],
+  "keep_wireless_debugging_on": false
+}

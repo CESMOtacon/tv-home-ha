@@ -18,9 +18,9 @@ Chromecast with Google TV, the Google TV Streamer, the NVIDIA Shield). Tested on
 
 1. Download Google's **SDK Platform-Tools** for your computer: <https://developer.android.com/tools/releases/platform-tools>.
    Unzip it somewhere easy, like your Desktop. You get a folder called `platform-tools`.
-2. Download the latest **TV Home APK** (`tv-home-<version>.apk`) from this project's
-   [Releases page](https://github.com/CESMOtacon/tv-home/releases) and put it in that same `platform-tools`
-   folder.
+2. Download the latest **TV Home for Home Assistant APK** (`tv-home-ha-<version>.apk`) from this project's
+   [Releases page](https://github.com/CESMOtacon/tv-home-ha/releases) and put it in that same `platform-tools`
+   folder. (Don't have Home Assistant? Use [plain TV Home](https://github.com/CESMOtacon/tv-home) instead.)
 3. Open a terminal in the `platform-tools` folder:
    - **Windows:** open the folder, click the address bar, type `powershell` and press Enter.
    - **Mac:** open Terminal, type `cd ` (with a space), drag the folder onto the window and press Return.
@@ -80,7 +80,7 @@ In the commands below, type `adb` on Mac and Linux, and `.\adb` on Windows Power
 ## 5. Install TV Home
 
 ```
-adb install tv-home-1.0.0.apk
+adb install tv-home-ha-1.0.0.apk
 ```
 
 (Use the actual file name you downloaded.) It should say `Success`.
@@ -96,7 +96,10 @@ Have a look around:
   on an app there).
 - **All apps** also has a **Google TV** tile that opens Google's home screen, for search and your watchlist.
 
-That's the basic install. Everything below is optional.
+Next, connect it to Home Assistant: **[docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md)**. Until then, TV Home
+works like the plain edition (with a pill saying Home Assistant isn't set up yet).
+
+Everything below is optional.
 
 ---
 
@@ -196,7 +199,7 @@ also turn off Developer options. The pairing is remembered, so next time you onl
 Download the new APK and run:
 
 ```
-adb install -r tv-home-<new version>.apk
+adb install -r tv-home-ha-<new version>.apk
 ```
 
 Your settings and Apps row are kept.
