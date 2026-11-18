@@ -11,6 +11,10 @@ that matches the weather outside your window, or slow drifting space and aurora 
 It sits on top of Google TV instead of replacing it. Nothing on the TV is disabled or removed, and uninstalling
 it puts everything back exactly as it was.
 
+![The TV Home screen, with NASA's picture of the day behind it](docs/images/home-apod.jpg)
+
+**Live weather**: the background that shows your real sky right now.
+
 | Sunset | Rain | Night |
 |---|---|---|
 | ![Live weather at sunset](docs/images/sky-sunset.jpg) | ![Live weather in the rain](docs/images/sky-rain.jpg) | ![Live weather at night, with the real moon](docs/images/sky-night.jpg) |
@@ -51,6 +55,17 @@ Setup: [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
 - **Ambient mode** after two minutes: a big quiet clock over the background.
 - **Home button (optional).** Google TV doesn't let other apps take over the Home button, so TV Home includes a
   small helper that can send Home to TV Home instead. It's off until you turn it on.
+
+## Weather location
+
+Weather is optional: **Settings → Weather → Weather and temperature** turns it off completely (no weather, no
+location lookups). To choose where it's for, open **Settings → Weather → Weather location**, type a ZIP or postal
+code (or a town name) with the remote, and pick the right place if there's more than one. From then on TV Home uses
+exactly that place and stops guessing your area from your internet address. **Automatic** switches back.
+
+| Weather settings | Typing a ZIP code |
+|---|---|
+| ![Settings, showing the weather section with the location set to New York](docs/images/settings-weather.jpg) | ![The Weather location box with a ZIP code typed in](docs/images/weather-location-zip.jpg) |
 
 ## Install
 
