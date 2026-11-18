@@ -62,6 +62,8 @@ Weather is optional: **Settings → Weather → Weather and temperature** turns 
 location lookups). To choose where it's for, open **Settings → Weather → Weather location**, type a ZIP or postal
 code (or a town name) with the remote, and pick the right place if there's more than one. From then on TV Home uses
 exactly that place and stops guessing your area from your internet address. **Automatic** switches back.
+In this edition, if `ha.json` has a `weather` section (your station), the weather and the sky follow Home
+Assistant's home location instead, and Settings says so.
 
 | Weather settings | Typing a ZIP code |
 |---|---|
