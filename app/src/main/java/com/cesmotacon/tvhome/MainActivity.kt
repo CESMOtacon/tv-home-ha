@@ -124,7 +124,10 @@ class MainActivity : Activity() {
         intro()
         poke()
         if (System.currentTimeMillis() - lastApodTry > 3 * 3600_000L) loadApod()
-        handler.post { (lastFocused?.takeIf { it.isAttachedToWindow } ?: appRow.getChildAt(0))?.requestFocus() }
+        // Decide now: once onResume returns, Android makes the window visible and, if nothing has focus yet (as after
+        // a settings reload), gives it to the first focusable view, Settings, which would then count as "last focused".
+        val restore = lastFocused?.takeIf { it.isAttachedToWindow } ?: appRow.getChildAt(0)
+        handler.post { restore?.requestFocus() }
     }
 
     override fun onPause() {
