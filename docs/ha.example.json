@@ -36,7 +36,6 @@
   "doorbell": {
     "ring": "binary_sensor.front_door_visitor",
     "camera": "camera.front_door_sub",
-    "camera_hd": "camera.front_door_main",
     "snapshot": "camera.front_door_snapshot",
     "vehicle": "binary_sensor.front_door_vehicle",
     "vehicle_quiet_when": "input_boolean.do_not_disturb",

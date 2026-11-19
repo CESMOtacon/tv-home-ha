@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
@@ -94,6 +95,7 @@ class CamerasActivity : Activity() {
         root.addView(full, FrameLayout.LayoutParams(Ui.MATCH, Ui.MATCH))
 
         setContentView(root)
+        Sounds.attach(this)
         scope.launch {
             var cams = emptyList<Ha.Cam>()
             repeat(10) { if (cams.isEmpty()) { if (Ha.connected) cams = Ha.cameras(); if (cams.isEmpty()) delay(500) } }
@@ -217,13 +219,17 @@ class CamerasActivity : Activity() {
         if (fullIndex >= 0) {
             when (e.keyCode) {
                 KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (e.action == KeyEvent.ACTION_DOWN) openFull(fullIndex + if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1)
+                    if (e.action == KeyEvent.ACTION_DOWN && tiles.size > 1) {
+                        Sounds.move(this, if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) AudioManager.FX_FOCUS_NAVIGATION_RIGHT else AudioManager.FX_FOCUS_NAVIGATION_LEFT)
+                        openFull(fullIndex + if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1)
+                    }
                     return true
                 }
                 KeyEvent.KEYCODE_BACK -> { if (e.action == KeyEvent.ACTION_UP) closeFull(); return true }
                 KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> return true
             }
         }
+        Sounds.key(this, e)
         return super.dispatchKeyEvent(e)
     }
 

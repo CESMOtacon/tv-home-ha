@@ -245,13 +245,15 @@ class DoorbellPopup(private val svc: AccessibilityService) {
         when (e.keyCode) {
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (e.action == KeyEvent.ACTION_DOWN) {
+                    val was = focus
                     focus = (focus + if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1).coerceIn(0, buttons.lastIndex)
+                    if (focus != was) Sounds.move(svc)
                     paintFocus()
                 }
                 return true
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (e.action == KeyEvent.ACTION_UP) actions.getOrNull(focus)?.invoke()
+                if (e.action == KeyEvent.ACTION_UP) actions.getOrNull(focus)?.let { Sounds.click(svc); it() }
                 return true
             }
             KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_ESCAPE -> { if (e.action == KeyEvent.ACTION_UP) hide(); return true }
