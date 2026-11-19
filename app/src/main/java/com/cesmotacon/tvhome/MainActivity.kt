@@ -90,6 +90,9 @@ class MainActivity : Activity() {
         Place.load(this)
         Edition.init(this)
         build()
+        // the Apps row exists from the start, so the first app gets the selection even if TV Home is created behind
+        // something (a screensaver, or a settings reload) and only shown later
+        refreshApps()
         setContentView(root)
         Sounds.attach(this)
         // TVs have no system bars; on other devices (and emulators) hide them so the home screen fills the screen
