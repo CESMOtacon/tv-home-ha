@@ -4,7 +4,6 @@ import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
-import android.media.AudioManager
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
@@ -220,7 +219,7 @@ class CamerasActivity : Activity() {
             when (e.keyCode) {
                 KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
                     if (e.action == KeyEvent.ACTION_DOWN && tiles.size > 1) {
-                        Sounds.move(this, if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) AudioManager.FX_FOCUS_NAVIGATION_RIGHT else AudioManager.FX_FOCUS_NAVIGATION_LEFT)
+                        Sounds.move(this)
                         openFull(fullIndex + if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1)
                     }
                     return true
