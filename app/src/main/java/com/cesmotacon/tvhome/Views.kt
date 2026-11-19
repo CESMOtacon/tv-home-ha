@@ -110,7 +110,6 @@ object Beat : android.view.Choreographer.FrameCallback {
     private val waiting = LinkedHashSet<View>()
     private var posted = false
     private var lastNs = 0L
-    private var holdUntil = 0L
 
     /** Redraw [v] on the next beat. Main thread only. */
     fun next(v: View) {
@@ -118,15 +117,8 @@ object Beat : android.view.Choreographer.FrameCallback {
         if (!posted) { posted = true; android.view.Choreographer.getInstance().postFrameCallback(this) }
     }
 
-    /**
-     * Keep everything on the beat still for [ms] (called on each remote press). Moving focus animates the tile and the
-     * glow at full frame rate; with the background repainting underneath, the TV's GPU fell behind and a press took
-     * ~130 ms to show. Paused, it's about half that. Things carry on from where they were afterwards, so nothing jumps.
-     */
-    fun hold(ms: Long) { holdUntil = android.os.SystemClock.uptimeMillis() + ms }
-
     override fun doFrame(frameTimeNanos: Long) {
-        if (frameTimeNanos - lastNs < 30_000_000L || android.os.SystemClock.uptimeMillis() < holdUntil) {  // every other 60 Hz frame
+        if (frameTimeNanos - lastNs < 30_000_000L) {  // every other 60 Hz frame
             android.view.Choreographer.getInstance().postFrameCallback(this); return
         }
         lastNs = frameTimeNanos; posted = false

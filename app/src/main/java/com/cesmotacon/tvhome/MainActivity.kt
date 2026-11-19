@@ -160,7 +160,6 @@ class MainActivity : Activity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             poke()
-            Beat.hold(900)   // background stays still while you move around, so the tiles respond at once
             if (inAmbient) { exitAmbient(true); swallowUp = true; return true }
         } else if (event.action == KeyEvent.ACTION_UP && swallowUp) { swallowUp = false; return true }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {   // closes settings; otherwise nothing to go back to from home
