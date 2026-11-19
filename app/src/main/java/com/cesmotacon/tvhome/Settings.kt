@@ -35,6 +35,9 @@ object Prefs {
     /** Off by default: TV Home's helper can take over the Home button, but only once the viewer turns this on. */
     fun takeOverHome(ctx: Context) = p(ctx).getBoolean("takeOverHome", false)
     fun setTakeOverHome(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("takeOverHome", v).apply()
+    /** The TV's navigation tick and OK click (see [Sounds]). */
+    fun sounds(ctx: Context) = p(ctx).getBoolean("sounds", true)
+    fun setSounds(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("sounds", v).apply()
 
     val BACKGROUNDS = listOf(
         Triple("apod", "NASA picture of the day", "A new real space photo every day, slowly panning"),
@@ -66,6 +69,7 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
     private lateinit var weatherRow: Row
     private lateinit var locationRow: Row
     private lateinit var unitsRow: Row
+    private lateinit var soundsRow: Row
     private lateinit var slide: View
     val isOpen get() = root.visibility == View.VISIBLE
 
@@ -134,6 +138,13 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
             text = "Hold OK on an app in the row to move it or take it off. Add apps from All apps (hold OK there too)."
             setShadowLayer(0f, 0f, 0f, 0)
         }, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP).apply { leftMargin = Ui.px(20); rightMargin = Ui.px(20) })
+        sheet.addView(section("SOUNDS"))
+        soundsRow = Row("Remote sounds", "A soft tick as you move around and a click on OK: the TV's own sounds, like Google TV's home screen") {
+            val on = !Prefs.sounds(ctx)
+            Prefs.setSounds(ctx, on); refresh()
+            if (on) Sounds.click(ctx)   // so you hear what you turned on
+        }
+        sheet.addView(soundsRow, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP))
         sheet.addView(section("INPUTS"))
         inputsRow = Row("Always show HDMI inputs", "Off: only inputs with something switched on are shown") {
             Prefs.setAllInputs(ctx, !Prefs.allInputs(ctx)); refresh(); onChange()
@@ -191,6 +202,7 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         seasonRow.setMark(Prefs.seasonal(ctx), radio = false)
         homeRow.setMark(Prefs.takeOverHome(ctx), radio = false)
         inputsRow.setMark(Prefs.allInputs(ctx), radio = false)
+        soundsRow.setMark(Prefs.sounds(ctx), radio = false)
         weatherRow.setMark(Prefs.weather(ctx), radio = false)
         weatherRow.descTv.text = weatherDesc()
         locationRow.descTv.text = placeDesc()

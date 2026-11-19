@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
+import android.view.KeyEvent
 import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.ScrollView
@@ -57,6 +58,12 @@ class AllAppsActivity : Activity() {
         scroll.addView(grid)
         root.addView(scroll, Ui.frameLp(Ui.MATCH, Ui.MATCH, 0, Ui.px(172)))
         setContentView(root)
+        Sounds.attach(this)
         grid.post { grid.getChildAt(0)?.requestFocus() }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        Sounds.key(this, event)
+        return super.dispatchKeyEvent(event)
     }
 }

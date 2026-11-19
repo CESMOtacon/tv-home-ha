@@ -91,6 +91,7 @@ class MainActivity : Activity() {
         Edition.init(this)
         build()
         setContentView(root)
+        Sounds.attach(this)
         // TVs have no system bars; on other devices (and emulators) hide them so the home screen fills the screen
         window.setDecorFitsSystemWindows(false)
         window.insetsController?.let {
@@ -160,6 +161,7 @@ class MainActivity : Activity() {
             if (settings.isOpen && event.action == KeyEvent.ACTION_UP) settings.close()
             return true
         }
+        Sounds.key(this, event)
         return super.dispatchKeyEvent(event)
     }
 
