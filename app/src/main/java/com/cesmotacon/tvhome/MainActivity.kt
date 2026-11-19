@@ -153,6 +153,7 @@ class MainActivity : Activity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             poke()
+            Beat.hold(900)   // background stays still while you move around, so the tiles respond at once
             if (inAmbient) { exitAmbient(true); swallowUp = true; return true }
         } else if (event.action == KeyEvent.ACTION_UP && swallowUp) { swallowUp = false; return true }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) {   // closes settings; otherwise nothing to go back to from home
@@ -174,6 +175,7 @@ class MainActivity : Activity() {
         bg = BackgroundView(this); root.addView(bg, lp(Ui.MATCH, Ui.MATCH))
         seasonal = SeasonalView(this); root.addView(seasonal, lp(Ui.MATCH, Ui.MATCH))
         root.addView(View(this).apply {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)   // never changes: painted once, then reused as one picture
             background = LayerDrawable(arrayOf(
                 GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(0xA6040509.toInt(), 0x38040509, 0x00040509, 0x00040509)),
                 GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0x66040509, 0x00040509, 0x00040509, 0x99040509.toInt()))))
@@ -335,8 +337,10 @@ class MainActivity : Activity() {
         appRow.removeAllViews()
         val w = Ui.px(222); val h = Ui.px(125)
         var focusTile: View? = null
-        for (e in entries.take(6)) {
+        for ((i, e) in entries.take(6).withIndex()) {
             val t = Apps.tile(this, e, w, h)
+            // where the selection starts when TV Home opens (otherwise Android picks Settings, the first in the layout)
+            t.isFocusedByDefault = i == 0
             focusGlow(t, t.accent)
             t.onLongClick = { appMenu(e) }
             appRow.addView(t, Ui.linLp(w, h, right = Ui.px(26)))
@@ -346,6 +350,7 @@ class MainActivity : Activity() {
         all.addView(Ui.text(this, 36, 0xFFCFD6E2.toInt()).apply { text = "☷" }, FrameLayout.LayoutParams(Ui.WRAP, Ui.WRAP).apply { leftMargin = Ui.px(20); topMargin = Ui.px(12) })
         all.addView(Ui.text(this, 23, Color.WHITE, Ui.MED).apply { text = "All apps" }, FrameLayout.LayoutParams(Ui.WRAP, Ui.WRAP, Gravity.BOTTOM or Gravity.START).apply { leftMargin = Ui.px(20); bottomMargin = Ui.px(16) })
         all.onClick = { startActivity(Intent(this, AllAppsActivity::class.java)) }
+        all.isFocusedByDefault = entries.isEmpty()
         focusGlow(all, 0xFF9AA4B8.toInt())
         appRow.addView(all, Ui.linLp(w, h))
         focusTile?.let { t -> t.post { t.requestFocus() } }

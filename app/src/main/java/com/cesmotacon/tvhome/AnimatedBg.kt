@@ -42,6 +42,16 @@ class AnimatedBg(ctx: Context) : View(ctx) {
     fun start() { running = true; last = 0L; invalidate() }
     fun stop() { running = false }
 
+    /**
+     * Drawn into its own GPU layer, which is only repainted on the [Beat]. Frames in between (a tile lifting as focus
+     * moves) reuse it as one picture instead of redrawing every cloud, glow and hill, which is what kept the remote
+     * waiting on the TV's GPU.
+     */
+    override fun onVisibilityAggregated(isVisible: Boolean) {
+        super.onVisibilityAggregated(isVisible)
+        setLayerType(if (isVisible) LAYER_TYPE_HARDWARE else LAYER_TYPE_NONE, null)
+    }
+
     private fun r(a: Float, b: Float) = a + rnd.nextFloat() * (b - a)
     private val W get() = width.toFloat()
     private val H get() = height.toFloat()
