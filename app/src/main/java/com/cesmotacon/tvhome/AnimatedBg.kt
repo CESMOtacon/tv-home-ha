@@ -20,7 +20,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-/** Animated backgrounds drawn on the TV: deep space, aurora, a glow that matches the running light show, and the live sky. ~30 fps. */
+/** Animated backgrounds drawn on the TV: deep space, aurora, a glow that matches the running light show, and the live sky. ~30 fps (see [Beat]). */
 class AnimatedBg(ctx: Context) : View(ctx) {
     enum class Mode { SPACE, AURORA, LIGHTS, SKY }
 
@@ -249,7 +249,7 @@ class AnimatedBg(ctx: Context) : View(ctx) {
             Mode.SPACE -> drawSpace(canvas, dt); Mode.AURORA -> drawAurora(canvas); Mode.LIGHTS -> drawLights(canvas, dt)
             Mode.SKY -> { sky.update(if (running) dt else 0f, Weather.currentOrFair()); sky.draw(canvas) }
         }
-        if (running) postInvalidateDelayed(33)
+        if (running) Beat.next(this)
     }
 
     @Suppress("unused") private val tmpRect = Rect()

@@ -64,7 +64,7 @@ class SeasonalView(ctx: Context) : View(ctx) {
         ps.clear(); t = 0f; nextBurst = 0.6f
         if (width > 0) seed()
         running = true; last = 0L
-        postInvalidateOnAnimation()
+        Beat.next(this)
     }
 
     fun stop() { running = false }
@@ -153,6 +153,6 @@ class SeasonalView(ctx: Context) : View(ctx) {
             }
             Theme.NONE -> {}
         }
-        postInvalidateOnAnimation()
+        Beat.next(this)   // in step with the background: one repaint for both
     }
 }

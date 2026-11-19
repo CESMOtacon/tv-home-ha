@@ -44,7 +44,7 @@ class MainActivity : Activity() {
     private lateinit var bg: BackgroundView
     private lateinit var seasonal: SeasonalView
     private lateinit var glow: GlowView
-    private lateinit var content: FrameLayout
+    private lateinit var content: RowNav
     private lateinit var greetBox: LinearLayout
     private lateinit var greet: TextView
     private lateinit var dateTv: TextView
@@ -180,7 +180,11 @@ class MainActivity : Activity() {
         }, lp(Ui.MATCH, Ui.MATCH))
         glow = GlowView(this); root.addView(glow, lp(Ui.MATCH, Ui.MATCH))
 
-        content = FrameLayout(this).apply { clipChildren = false; clipToPadding = false }
+        // remote navigation goes row by row: Settings, then Apps, Inputs and whatever rows the edition adds
+        content = RowNav(this).apply {
+            clipChildren = false; clipToPadding = false
+            rows = { listOf<View>(chipsRow) + (0 until rowsBox.childCount).map { rowsBox.getChildAt(it) } }
+        }
         root.addView(content, lp(Ui.MATCH, Ui.MATCH))
 
         // greeting (top left)
