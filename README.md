@@ -52,7 +52,8 @@ Setup: [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
 - **Album art** fills the background while music plays (Spotify and others), with the track shown up top.
 - **Seasonal touches**: falling leaves in autumn, snow in winter, fireworks on New Year's Eve and the 4th of July,
   hearts on Valentine's Day. Leaves and snow drift with the real wind and swirl when a gust comes through.
-- **Ambient mode** after two minutes: a big quiet clock over the background.
+- **Ambient clock** after two minutes: a big quiet clock over the background. Prefer the TV's own screensaver
+  (Google's photo slideshows)? Settings → When idle turns the clock off.
 - **Remote sounds**: a soft pop as the selection moves and a deeper one on OK, quieter than most TVs' own UI sounds
   (Settings → Sounds switches them off).
 - **Home button (optional).** Google TV doesn't let other apps take over the Home button, so TV Home includes a

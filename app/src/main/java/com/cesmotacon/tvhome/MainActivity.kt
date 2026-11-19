@@ -270,7 +270,7 @@ class MainActivity : Activity() {
         root.addView(ambient, lp(Ui.MATCH, Ui.MATCH))
 
         settings = SettingsPanel(this, onChange = {
-            applyBackground(); applySeasonal(); refreshInputs(); updateWeatherUi(); Weather.source.refresh(this)
+            applyBackground(); applySeasonal(); refreshInputs(); updateWeatherUi(); Weather.source.refresh(this); poke()
         }, onClose = {
             content.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
             gear.requestFocus()
@@ -605,7 +605,7 @@ class MainActivity : Activity() {
     }
 
     private val goAmbient = Runnable { enterAmbient() }
-    private fun poke() { handler.removeCallbacks(goAmbient); handler.postDelayed(goAmbient, AMBIENT_AFTER_MS) }
+    private fun poke() { handler.removeCallbacks(goAmbient); if (Prefs.ambient(this)) handler.postDelayed(goAmbient, AMBIENT_AFTER_MS) }
 
     fun enterAmbient() {
         if (inAmbient) return

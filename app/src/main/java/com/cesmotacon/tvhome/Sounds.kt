@@ -18,7 +18,7 @@ import kotlin.math.sin
  * Remote sounds: a soft pop as the selection moves and a slightly deeper one on OK. They're made here in code (a pure
  * tone that drops in pitch and fades within a few hundredths of a second), so there are no audio files and no
  * metallic ring: some TVs' own navigation sound (TCL's, for one) is a bright, ringing tick. They play at the TV's
- * volume, quieter than its own UI sounds. Settings → Sounds turns them off.
+ * volume, well below its own UI sounds. Settings → Sounds turns them off.
  */
 object Sounds {
     private var navAt = 0L
@@ -28,7 +28,7 @@ object Sounds {
     private var popId = 0
     private var clickId = 0
     private val loaded = HashSet<Int>()
-    private const val LEVEL = 0.55f   // on top of the sound's own quiet peak (about -14 dBFS)
+    private const val LEVEL = 0.35f   // on top of the sound's own quiet peak (about -14 dBFS), so about -23 dBFS
 
     private fun ensure(ctx: Context): SoundPool? {
         pool?.let { return it }

@@ -35,6 +35,9 @@ object Prefs {
     /** Off by default: TV Home's helper can take over the Home button, but only once the viewer turns this on. */
     fun takeOverHome(ctx: Context) = p(ctx).getBoolean("takeOverHome", false)
     fun setTakeOverHome(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("takeOverHome", v).apply()
+    /** TV Home's big clock after two idle minutes. Off leaves idle time to the TV's own screensaver. */
+    fun ambient(ctx: Context) = p(ctx).getBoolean("ambient", true)
+    fun setAmbient(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("ambient", v).apply()
     /** Soft pops as the selection moves and on OK (see [Sounds]). */
     fun sounds(ctx: Context) = p(ctx).getBoolean("sounds", true)
     fun setSounds(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("sounds", v).apply()
@@ -70,6 +73,7 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
     private lateinit var locationRow: Row
     private lateinit var unitsRow: Row
     private lateinit var soundsRow: Row
+    private lateinit var ambientRow: Row
     private lateinit var slide: View
     val isOpen get() = root.visibility == View.VISIBLE
 
@@ -138,6 +142,9 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
             text = "Hold OK on an app in the row to move it or take it off. Add apps from All apps (hold OK there too)."
             setShadowLayer(0f, 0f, 0f, 0)
         }, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP).apply { leftMargin = Ui.px(20); rightMargin = Ui.px(20) })
+        sheet.addView(section("WHEN IDLE"))
+        ambientRow = Row("Ambient clock", ambientDesc()) { Prefs.setAmbient(ctx, !Prefs.ambient(ctx)); refresh(); onChange() }
+        sheet.addView(ambientRow, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP))
         sheet.addView(section("SOUNDS"))
         soundsRow = Row("Remote sounds", "A soft pop as you move around, and a deeper one on OK") {
             val on = !Prefs.sounds(ctx)
@@ -182,6 +189,14 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         }
     }
 
+    /** Mentions when the TV's own screensaver starts (its screen-off timeout), if the TV says. */
+    private fun ambientDesc(): String {
+        val min = runCatching { android.provider.Settings.System.getInt(ctx.contentResolver, android.provider.Settings.System.SCREEN_OFF_TIMEOUT) / 60_000 }
+            .getOrNull()?.takeIf { it in 1..240 }
+        val tv = if (min != null) "the TV's own screensaver, after $min min" else "the TV's own screensaver"
+        return if (Prefs.ambient(ctx)) "A big quiet clock after 2 minutes without the remote; later, $tv" else "Off: idle time is left to $tv"
+    }
+
     private fun seasonDesc() = when (SeasonalView.pick()) {
         SeasonalView.Theme.LEAVES -> "Falling leaves this month"
         SeasonalView.Theme.SNOW -> if (Prefs.background(ctx) == "sky") "Snow this month (Live weather shows real snow instead)" else "Snow this month"
@@ -203,6 +218,8 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
         homeRow.setMark(Prefs.takeOverHome(ctx), radio = false)
         inputsRow.setMark(Prefs.allInputs(ctx), radio = false)
         soundsRow.setMark(Prefs.sounds(ctx), radio = false)
+        ambientRow.setMark(Prefs.ambient(ctx), radio = false)
+        ambientRow.descTv.text = ambientDesc()
         weatherRow.setMark(Prefs.weather(ctx), radio = false)
         weatherRow.descTv.text = weatherDesc()
         locationRow.descTv.text = placeDesc()
