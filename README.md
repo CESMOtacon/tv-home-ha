@@ -53,9 +53,8 @@ Setup: [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md).
 - **Seasonal touches**: falling leaves in autumn, snow in winter, fireworks on New Year's Eve and the 4th of July,
   hearts on Valentine's Day. Leaves and snow drift with the real wind and swirl when a gust comes through.
 - **Ambient mode** after two minutes: a big quiet clock over the background.
-- **Remote sounds**: a soft tick as the selection moves and a click on OK. They're the TV's own navigation sounds,
-  the ones Google TV's home screen makes, and they play even if the TV's system sounds are off (Settings → Sounds
-  switches them off).
+- **Remote sounds**: a soft pop as the selection moves and a deeper one on OK, quieter than most TVs' own UI sounds
+  (Settings → Sounds switches them off).
 - **Home button (optional).** Google TV doesn't let other apps take over the Home button, so TV Home includes a
   small helper that can send Home to TV Home instead. It's off until you turn it on.
 

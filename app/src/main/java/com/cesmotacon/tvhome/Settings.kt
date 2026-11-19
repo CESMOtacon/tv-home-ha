@@ -35,7 +35,7 @@ object Prefs {
     /** Off by default: TV Home's helper can take over the Home button, but only once the viewer turns this on. */
     fun takeOverHome(ctx: Context) = p(ctx).getBoolean("takeOverHome", false)
     fun setTakeOverHome(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("takeOverHome", v).apply()
-    /** The TV's navigation tick and OK click (see [Sounds]). */
+    /** Soft pops as the selection moves and on OK (see [Sounds]). */
     fun sounds(ctx: Context) = p(ctx).getBoolean("sounds", true)
     fun setSounds(ctx: Context, v: Boolean) = p(ctx).edit().putBoolean("sounds", v).apply()
 
@@ -139,7 +139,7 @@ class SettingsPanel(private val ctx: Context, private val onChange: () -> Unit, 
             setShadowLayer(0f, 0f, 0f, 0)
         }, LinearLayout.LayoutParams(Ui.MATCH, Ui.WRAP).apply { leftMargin = Ui.px(20); rightMargin = Ui.px(20) })
         sheet.addView(section("SOUNDS"))
-        soundsRow = Row("Remote sounds", "A soft tick as you move around and a click on OK: the TV's own sounds, like Google TV's home screen") {
+        soundsRow = Row("Remote sounds", "A soft pop as you move around, and a deeper one on OK") {
             val on = !Prefs.sounds(ctx)
             Prefs.setSounds(ctx, on); refresh()
             if (on) Sounds.click(ctx)   // so you hear what you turned on
