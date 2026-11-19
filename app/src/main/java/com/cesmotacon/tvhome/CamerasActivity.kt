@@ -156,11 +156,14 @@ class CamerasActivity : Activity() {
         liveJob?.cancel()
         tiles.forEach { it.live.visibility = View.GONE; if (it.tex !== tex) it.tex.alpha = 0f }
         if (tex !== fullTex) fullTex.alpha = 0f
-        player?.release(); player = null
+        // Stop the old stream now but release it only once the remote settles: release() waits for the video decoder
+        // to shut down, which on the TV took long enough to make every move between cameras stutter. stop() doesn't wait.
+        player?.stop()
         playingFor = tex
         val isFull = tex === fullTex
         liveJob = scope.launch {
             delay(350)   // don't start streams while scrolling past
+            player?.release(); player = null   // already stopped, so this is quick now
             // try the Clear twin even if it was switched on after this screen opened
             val hi = if (isFull) cam.hiId ?: cam.id.takeIf { it.endsWith("_fluent") }?.replace("_fluent", "_clear") else null
             val hiUrl = hi?.let { Ha.cameraStreamUrl(it) }
