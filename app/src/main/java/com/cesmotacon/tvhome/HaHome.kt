@@ -109,6 +109,7 @@ object HaHome {
             r.sub.text = when (t.action) {
                 "doorbell" -> "Live camera"
                 "all_cameras" -> "All feeds"
+                "all_lights" -> "Every room"
                 "lights_back" -> "End shows"
                 else -> if (!connected) "Offline" else if (run) "● Running" else if (t.stop != null) "Off" else "Light show"
             }
@@ -138,6 +139,7 @@ object HaHome {
     private fun run(h: MainActivity, t: HaConfig.Tile) {
         when (t.action) {
             "all_cameras" -> if (Ha.connected) h.startActivity(Intent(h, CamerasActivity::class.java)) else h.toast("Home Assistant isn't connected (${Ha.status.lowercase()})")
+            "all_lights" -> if (Ha.connected) h.startActivity(Intent(h, LightsActivity::class.java)) else h.toast("Home Assistant isn't connected (${Ha.status.lowercase()})")
             "doorbell" -> if (HomeKeyService.instance != null) HaHelper.showDoorbell(false)
                           else h.toast("The camera needs TV Home's background helper, which isn't switched on yet")
             "lights_back" -> {

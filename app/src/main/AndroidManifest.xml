@@ -60,6 +60,12 @@
             android:screenOrientation="landscape" />
 
         <activity
+            android:name=".LightsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".AllAppsActivity"
             android:exported="false"
             android:excludeFromRecents="true"

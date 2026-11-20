@@ -22,7 +22,7 @@ import java.io.File
 object HaConfig {
     private const val TAG = "TvHome.HaConfig"
 
-    /** A tile in the Lights or Cameras group. [action]: "show" (start/stop), "lights_back", "doorbell" or "all_cameras". */
+    /** A tile in the Lights or Cameras group. [action]: "show" (start/stop), "lights_back", "all_lights", "doorbell" or "all_cameras". */
     class Tile(val name: String, val icon: String, val action: String, val start: String?, val stop: String?,
                val running: String?, val colors: IntArray, val alsoStop: List<String> = emptyList())
 
@@ -45,6 +45,10 @@ object HaConfig {
     @Volatile var lights: List<Tile> = emptyList(); private set
     @Volatile var camerasTitle = "Cameras"; private set
     @Volatile var cameraTiles: List<Tile> = emptyList(); private set
+    /** The All lights screen: a dashboard to mirror (its URL path), lights to leave off, floors (IDs) to show first. */
+    @Volatile var lightsDashboard: String? = null; private set
+    @Volatile var lightsHide: Set<String> = emptySet(); private set
+    @Volatile var floorOrder: List<String> = emptyList(); private set
     @Volatile var door: Door? = null; private set
     @Volatile var station: Station? = null; private set
     @Volatile var pills: List<Pill> = emptyList(); private set
@@ -77,6 +81,11 @@ object HaConfig {
         val c = j.optJSONObject("cameras")
         camerasTitle = c?.s("title") ?: "Cameras"
         cameraTiles = tiles(c?.optJSONArray("tiles"))
+        val al = j.optJSONObject("all_lights")
+        fun strings(a: JSONArray?) = a?.let { x -> (0 until x.length()).mapNotNull { x.optString(it).trim().takeIf { s -> s.isNotEmpty() } } } ?: emptyList()
+        lightsDashboard = al?.s("dashboard")?.trim('/')
+        lightsHide = strings(al?.optJSONArray("hide")).toSet()
+        floorOrder = strings(al?.optJSONArray("floor_order"))
 
         door = j.optJSONObject("doorbell")?.let { d ->
             val replies = ArrayList<Pair<String, String>>()

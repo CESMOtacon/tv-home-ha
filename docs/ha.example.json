@@ -21,8 +21,15 @@
       { "name": "Movie time", "icon": "🎬", "start": "scene.movie_time", "colors": ["#3A0CA3", "#4361EE", "#4CC9F0"] },
       { "name": "Cozy", "icon": "🕯️", "start": "script.cozy_on", "stop": "script.cozy_off", "running": "input_boolean.cozy", "colors": ["#FF9A3C", "#FFD27A", "#C8501A"] },
       { "name": "Party", "icon": "🎉", "start": "script.party_lights", "running": "input_boolean.party_lights_running", "colors": ["#FF0033", "#FF2D9A", "#A100FF"] },
-      { "name": "Lights back", "icon": "💡", "action": "lights_back", "also_stop": [] }
+      { "name": "Lights back", "icon": "💡", "action": "lights_back", "also_stop": [] },
+      { "name": "All lights", "icon": "🏠", "action": "all_lights" }
     ]
+  },
+
+  "all_lights": {
+    "dashboard": "dashboard-lights",
+    "floor_order": ["ground_floor", "upstairs", "outside"],
+    "hide": ["light.kitchen_wall_dimmer", "switch.coffee_maker"]
   },
 
   "cameras": {

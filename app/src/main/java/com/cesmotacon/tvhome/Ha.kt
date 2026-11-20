@@ -46,6 +46,9 @@ object Ha {
     private val pending = ConcurrentHashMap<Int, CompletableDeferred<JSONObject>>()
     private val nextId = AtomicInteger(1)
     private var subId = -1
+    /** Extra live subscriptions a screen asks for while it's open (by key), made again after every reconnect. */
+    private val extraWanted = ConcurrentHashMap<String, List<String>>()
+    private val extraSubIds = ConcurrentHashMap<String, Int>()
     private var ws: WebSocket? = null
     private var token: String? = null
     private var backoff = 2_000L
@@ -67,6 +70,27 @@ object Ha {
         ws?.cancel(); ws = null
         backoff = 2_000L
         connect()
+    }
+
+    /** Keep [ids] live in [states] (and tell listeners as they change) until [unwatch]. */
+    fun watch(key: String, ids: Collection<String>) {
+        unwatch(key)
+        extraWanted[key] = ids.distinct()
+        if (connected) subscribeExtra(key)
+    }
+
+    fun unwatch(key: String) {
+        extraWanted.remove(key)
+        extraSubIds.remove(key)?.let { sub ->
+            send(JSONObject().put("id", nextId.getAndIncrement()).put("type", "unsubscribe_events").put("subscription", sub))
+        }
+    }
+
+    private fun subscribeExtra(key: String) {
+        val ids = extraWanted[key] ?: return
+        val id = nextId.getAndIncrement()
+        extraSubIds[key] = id
+        send(JSONObject().put("id", id).put("type", "subscribe_entities").put("entity_ids", JSONArray(ids)))
     }
 
     fun addListener(l: (String) -> Unit) { listeners.add(l) }
@@ -106,6 +130,7 @@ object Ha {
     private fun dropped(why: String) {
         connected = false; status = why; emit("_status")
         pending.values.forEach { it.cancel() }; pending.clear()
+        extraSubIds.clear()
         ws = null
         main.postDelayed({ if (ws == null) connect() }, backoff)
         backoff = (backoff * 2).coerceAtMost(60_000)
@@ -120,6 +145,7 @@ object Ha {
                 connected = true; status = "Connected"; backoff = 2_000L
                 subId = nextId.getAndIncrement()
                 send(JSONObject().put("id", subId).put("type", "subscribe_entities").put("entity_ids", JSONArray(HaConfig.watch())))
+                extraSubIds.clear(); extraWanted.keys.forEach { subscribeExtra(it) }
                 emit("_status")
             }
             "auth_invalid" -> {
@@ -127,7 +153,7 @@ object Ha {
                 ws?.close(1000, null); ws = null
                 main.postDelayed({ connect() }, 300_000)
             }
-            "event" -> if (m.optInt("id") == subId) applyEvent(m.getJSONObject("event"))
+            "event" -> m.optInt("id").let { id -> if (id == subId || extraSubIds.containsValue(id)) applyEvent(m.getJSONObject("event")) }
             "result" -> pending.remove(m.optInt("id"))?.complete(m)
         }
     }
@@ -159,15 +185,23 @@ object Ha {
         ev.optJSONArray("r")?.let { r -> for (i in 0 until r.length()) { states.remove(r.getString(i)); emit(r.getString(i)) } }
     }
 
-    fun call(domain: String, service: String, entityId: String? = null, data: JSONObject? = null) {
+    fun call(domain: String, service: String, entityId: String? = null, data: JSONObject? = null) =
+        callTargets(domain, service, entityId?.let { JSONObject().put("entity_id", it) }, data)
+
+    /** One call for several entities at once (Home Assistant sends them out together). */
+    fun call(domain: String, service: String, entityIds: List<String>, data: JSONObject? = null) =
+        callTargets(domain, service, JSONObject().put("entity_id", JSONArray(entityIds)), data)
+
+    private fun callTargets(domain: String, service: String, target: JSONObject?, data: JSONObject?) {
         val o = JSONObject().put("id", nextId.getAndIncrement()).put("type", "call_service")
             .put("domain", domain).put("service", service)
-        if (entityId != null) o.put("target", JSONObject().put("entity_id", entityId))
+        if (target != null) o.put("target", target)
         if (data != null) o.put("service_data", data)
         if (!send(o)) Log.w(TAG, "call_service $domain.$service not sent (offline)")
     }
 
-    private suspend fun request(o: JSONObject, timeoutMs: Long = 10_000): JSONObject? {
+    /** One websocket command and its result message (null if offline or no answer within [timeoutMs]). */
+    suspend fun request(o: JSONObject, timeoutMs: Long = 10_000): JSONObject? {
         val id = nextId.getAndIncrement()
         val d = CompletableDeferred<JSONObject>()
         pending[id] = d

@@ -25,6 +25,8 @@ it puts everything back exactly as it was.
 
 - **A Lights group**: tiles for your scripts, scenes and light shows. A running show glows in its own colours
   (and so does the *Glow* background); press it again to stop it, or press *Lights back* to end everything.
+  *All lights* opens your lights on one screen, by floor and room or just as a dashboard of yours lays them out:
+  OK switches a light (or a whole room), and holding OK sets its brightness and colour.
 - **A Cameras group**: the front door camera in a pop-up, and *All cameras*: every camera on one screen, live on
   the one you're on, full screen in HD with OK.
 - **A doorbell pop-up over whatever you're watching** when someone rings, with buttons that speak a reply through
